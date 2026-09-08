@@ -180,6 +180,36 @@
     .fleet-side img{height:180px;}
   }
 
+  .fleet-upcoming{
+    margin-top:18px;
+    display:flex;align-items:center;gap:20px;
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(201,164,76,0.25);
+    border-radius:var(--radius);
+    padding:16px;
+  }
+  .fleet-upcoming img{
+    width:160px;height:110px;object-fit:cover;
+    border-radius:10px;flex:0 0 auto;
+    background:#fff;
+  }
+  .fleet-upcoming-text{flex:1;}
+  .upcoming-badge{
+    display:inline-block;
+    background:rgba(201,164,76,0.15);
+    border:1px solid var(--gold);
+    color:var(--gold-light);
+    padding:4px 14px;border-radius:50px;
+    font-size:0.78rem;font-weight:600;
+    margin-bottom:8px;
+  }
+  .fleet-upcoming-text p{margin:0;color:#c3cddd;font-size:0.9rem;}
+
+  @media (max-width:600px){
+    .fleet-upcoming{flex-direction:column;text-align:center;}
+    .fleet-upcoming img{width:100%;height:160px;}
+  }
+
   /* Sections */
   section{padding:70px 0;}
   .section-head{text-align:center;max-width:600px;margin:0 auto 46px;}
@@ -415,6 +445,14 @@
       <div class="fleet-side">
         <img src="images/van-black-front.jpg" alt="מרצדס ספרינטר של Quick הסעות ברחוב">
         <img src="images/van-black-2.jpg" alt="מרצדס ספרינטר של Quick הסעות - זווית צד">
+      </div>
+    </div>
+
+    <div class="fleet-upcoming">
+      <img src="images/van-white-sienna.png" alt="רכב חדש שיצטרף לצי Quick הסעות בקרוב">
+      <div class="fleet-upcoming-text">
+        <span class="upcoming-badge">בקרוב בצי שלנו</span>
+        <p>אנחנו מרחיבים את הצי כדי לתת לכם עוד יותר אפשרויות נוחות ומרווחות.</p>
       </div>
     </div>
   </div>
