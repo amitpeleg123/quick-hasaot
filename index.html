@@ -236,6 +236,29 @@
   .why-item h4{margin:0 0 6px;color:var(--navy);font-size:1.05rem;}
   .why-item p{margin:0;color:var(--muted);font-size:0.9rem;}
 
+  /* FAQ */
+  .faq{background:#fff;}
+  .faq-list{max-width:720px;margin:0 auto;}
+  .faq-item{
+    border-bottom:1px solid #e5e3dd;
+  }
+  .faq-question{
+    width:100%;display:flex;justify-content:space-between;align-items:center;
+    gap:16px;padding:20px 4px;background:none;border:none;cursor:pointer;
+    text-align:right;font-family:inherit;font-size:1rem;font-weight:600;
+    color:var(--navy);
+  }
+  .faq-icon{
+    width:20px;height:20px;flex:0 0 auto;color:var(--gold);
+    transition:transform .25s;
+  }
+  .faq-item.open .faq-icon{transform:rotate(180deg);}
+  .faq-answer{
+    max-height:0;overflow:hidden;transition:max-height .25s ease;
+  }
+  .faq-answer p{margin:0 0 20px;color:var(--muted);font-size:0.92rem;line-height:1.7;}
+  .faq-item.open .faq-answer{max-height:200px;}
+
   /* Booking form */
   .booking{
     background:linear-gradient(135deg, var(--navy), var(--navy-dark));
@@ -526,6 +549,54 @@
   </div>
 </section>
 
+<!-- סקציית שאלות נפוצות - מוסתרת בינתיים, מחכה לתוכן מדויק מאילן -->
+<section id="faq" class="faq" hidden>
+  <div class="container">
+    <div class="section-head">
+      <div class="eyebrow">שאלות נפוצות</div>
+      <h2>כל מה שרציתם לדעת</h2>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-question" type="button">
+          <span>האם המחיר כולל מע"מ?</span>
+          <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="faq-answer">
+          <p>כן, כל המחירים שאנחנו מציעים כוללים מע"מ - אין הפתעות בסוף הנסיעה.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" type="button">
+          <span>כמה זמן מראש כדאי להזמין נסיעה?</span>
+          <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="faq-answer">
+          <p>מומלץ להזמין מראש כדי להבטיח זמינות, אך אנחנו משתדלים לתת מענה גם להזמנות דחופות.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" type="button">
+          <span>מה מדיניות הביטול?</span>
+          <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="faq-answer">
+          <p>אפשר לבטל או לשנות הזמנה בהתראה סבירה מראש - פרטים מלאים נמסרים בעת ההזמנה.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" type="button">
+          <span>אילו אמצעי תשלום מתקבלים?</span>
+          <svg class="faq-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="faq-answer">
+          <p>מזומן, אשראי וביט - כפי שנוח לכם.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section id="booking" class="booking">
   <div class="container">
     <div class="section-head">
@@ -692,6 +763,13 @@
     `;
     row.querySelector('.remove-stop-btn').addEventListener('click', () => row.remove());
     extraStopsContainer.appendChild(row);
+  });
+
+  // FAQ accordion
+  document.querySelectorAll('.faq-question').forEach(btn => {
+    btn.addEventListener('click', () => {
+      btn.closest('.faq-item').classList.toggle('open');
+    });
   });
 
   // Booking form submit -> builds a WhatsApp message with all the details
