@@ -376,7 +376,73 @@
   }
   .float-wa:hover{transform:scale(1.08);}
 
+  footer .foot-legal{margin-top:-6px;}
+  footer .foot-legal a{font-size:0.8rem;color:#8a95a8;}
+  footer .foot-legal a:hover{color:var(--gold-light);}
+
+  /* Cookie consent banner */
+  .cookie-banner{
+    position:fixed;bottom:0;left:0;right:0;z-index:80;
+    background:var(--navy-dark);color:#e8ecf3;
+    padding:18px 20px;
+    align-items:center;justify-content:space-between;
+    gap:20px;flex-wrap:wrap;
+    box-shadow:0 -6px 20px rgba(0,0,0,0.25);
+  }
+  .cookie-banner:not([hidden]){display:flex;}
+  .cookie-banner p{margin:0;font-size:0.85rem;max-width:640px;}
+  .cookie-banner a{color:var(--gold-light);}
+  .cookie-actions{display:flex;gap:10px;flex:0 0 auto;}
+  .cookie-decline,.cookie-accept{
+    padding:10px 18px;border-radius:50px;font-size:0.85rem;font-weight:700;
+    cursor:pointer;border:none;font-family:inherit;white-space:nowrap;
+  }
+  .cookie-decline{background:transparent;color:#e8ecf3;border:1.5px solid rgba(255,255,255,0.4);}
+  .cookie-decline:hover{border-color:var(--gold-light);color:var(--gold-light);}
+  .cookie-accept{background:var(--gold);color:var(--navy-dark);}
+  .cookie-accept:hover{background:var(--gold-light);}
+
+  /* Accessibility widget */
+  .a11y-widget{position:fixed;bottom:22px;left:90px;z-index:70;}
+  .a11y-toggle{
+    width:56px;height:56px;border-radius:50%;
+    background:var(--navy);color:#fff;border:none;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 8px 24px rgba(0,0,0,0.3);
+  }
+  .a11y-toggle svg{width:28px;height:28px;}
+  .a11y-toggle:hover{background:var(--navy-dark);}
+  .a11y-panel{
+    position:absolute;bottom:66px;left:0;
+    background:#fff;border-radius:14px;box-shadow:0 15px 40px rgba(0,0,0,0.25);
+    padding:16px;width:200px;
+  }
+  .a11y-panel h4{margin:0 0 10px;color:var(--navy);font-size:0.95rem;}
+  .a11y-panel button{
+    display:block;width:100%;text-align:right;
+    padding:10px 12px;margin-bottom:6px;border-radius:8px;
+    background:var(--cream);border:none;cursor:pointer;
+    font-family:inherit;font-size:0.85rem;color:var(--text);
+  }
+  .a11y-panel button:hover{background:#eee6d5;}
+  .a11y-panel button:last-child{margin-bottom:0;}
+
+  /* Accessibility states */
+  body.a11y-large-font{font-size:112.5%;}
+  body.a11y-larger-font{font-size:125%;}
+  body.a11y-contrast{background:#000!important;color:#fff!important;}
+  body.a11y-contrast .service-card,
+  body.a11y-contrast .contact-card,
+  body.a11y-contrast .booking-form,
+  body.a11y-contrast .why{background:#111!important;color:#fff!important;}
+  body.a11y-contrast .section-head h2,
+  body.a11y-contrast h3, body.a11y-contrast h4{color:#fff!important;}
+  body.a11y-contrast a{color:#ffd76a!important;}
+  body.a11y-underline a{text-decoration:underline!important;}
+
   @media (max-width: 860px){
+    .a11y-widget{left:auto;right:22px;bottom:90px;}
+    .float-wa{left:auto;right:22px;}
     nav{display:none;}
     .menu-toggle{display:block;}
     .hero{padding:110px 0 90px;min-height:auto;}
@@ -715,9 +781,39 @@
       <a href="#booking">הזמנה</a>
       <a href="#contact">יצירת קשר</a>
     </div>
+    <div class="foot-links foot-legal">
+      <a href="privacy.html">מדיניות פרטיות</a>
+      <a href="terms.html">תנאי שימוש</a>
+    </div>
     <div class="copyright">© 2026 Quick הסעות שדה התעופה נתב״ג וכל הארץ. כל הזכויות שמורות.</div>
   </div>
 </footer>
+
+<!-- Cookie consent banner -->
+<div class="cookie-banner" id="cookieBanner" hidden>
+  <div class="cookie-text">
+    <p>האתר משתמש בעוגיות לצורך תפעול תקין ומדידת שימוש אנונימית (Google Analytics). ניתן לקרוא עוד ב<a href="privacy.html">מדיניות הפרטיות</a>.</p>
+  </div>
+  <div class="cookie-actions">
+    <button type="button" class="cookie-decline" id="cookieDecline">רק הכרחיות</button>
+    <button type="button" class="cookie-accept" id="cookieAccept">אישור הכל</button>
+  </div>
+</div>
+
+<!-- Accessibility widget -->
+<div class="a11y-widget">
+  <button type="button" class="a11y-toggle" id="a11yToggle" aria-label="תפריט נגישות">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="4.5" r="1.8"/><path d="M4 8.5c2.5 1 5.3 1.5 8 1.5s5.5-.5 8-1.5M12 10v5M8 21l2.5-6M16 21l-2.5-6M8 13l-2 3M16 13l2 3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+  <div class="a11y-panel" id="a11yPanel" hidden>
+    <h4>נגישות</h4>
+    <button type="button" data-a11y="font-inc">הגדלת טקסט</button>
+    <button type="button" data-a11y="font-dec">הקטנת טקסט</button>
+    <button type="button" data-a11y="contrast">ניגודיות גבוהה</button>
+    <button type="button" data-a11y="underline-links">הדגשת קישורים</button>
+    <button type="button" data-a11y="reset">איפוס</button>
+  </div>
+</div>
 
 <a href="https://wa.me/972524880830" target="_blank" class="float-wa" aria-label="וואטסאפ">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="26" height="26"><path d="M4 20l1.3-3.9A8 8 0 1 1 8.9 19L4 20Z" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -822,6 +918,102 @@
     form.scrollIntoView({behavior:'smooth', block:'center'});
 
     window.open(waUrl, '_blank');
+  });
+
+  // ===== Cookie consent =====
+  const COOKIE_KEY = 'quickHasaotCookieConsent'; // 'accepted' | 'declined'
+  const cookieBanner = document.getElementById('cookieBanner');
+  const cookieAccept = document.getElementById('cookieAccept');
+  const cookieDecline = document.getElementById('cookieDecline');
+
+  function loadAnalytics(){
+    if (window.__gaLoaded) return;
+    window.__gaLoaded = true;
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = 'https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX'; // TODO: להחליף במזהה Google Analytics האמיתי
+    document.head.appendChild(script);
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    window.gtag = gtag;
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXXXXX');
+  }
+
+  try {
+    const consent = localStorage.getItem(COOKIE_KEY);
+    if (consent === 'accepted') {
+      loadAnalytics();
+    } else if (consent !== 'declined') {
+      cookieBanner.hidden = false;
+    }
+  } catch (e) {
+    // אם localStorage לא זמין, פשוט מציגים את הבאנר בכל טעינה
+    cookieBanner.hidden = false;
+  }
+
+  cookieAccept.addEventListener('click', () => {
+    try { localStorage.setItem(COOKIE_KEY, 'accepted'); } catch(e){}
+    cookieBanner.hidden = true;
+    loadAnalytics();
+  });
+
+  cookieDecline.addEventListener('click', () => {
+    try { localStorage.setItem(COOKIE_KEY, 'declined'); } catch(e){}
+    cookieBanner.hidden = true;
+  });
+
+  // ===== Accessibility widget =====
+  const a11yToggle = document.getElementById('a11yToggle');
+  const a11yPanel = document.getElementById('a11yPanel');
+
+  a11yToggle.addEventListener('click', () => {
+    a11yPanel.hidden = !a11yPanel.hidden;
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!a11yPanel.hidden && !a11yPanel.contains(e.target) && e.target !== a11yToggle && !a11yToggle.contains(e.target)) {
+      a11yPanel.hidden = true;
+    }
+  });
+
+  const A11Y_KEY = 'quickHasaotA11y';
+  const a11yClasses = ['a11y-large-font','a11y-larger-font','a11y-contrast','a11y-underline'];
+
+  function applyA11yState(state){
+    a11yClasses.forEach(c => document.body.classList.remove(c));
+    if (state.fontLevel === 1) document.body.classList.add('a11y-large-font');
+    if (state.fontLevel === 2) document.body.classList.add('a11y-larger-font');
+    if (state.contrast) document.body.classList.add('a11y-contrast');
+    if (state.underline) document.body.classList.add('a11y-underline');
+  }
+
+  function getA11yState(){
+    try {
+      return JSON.parse(localStorage.getItem(A11Y_KEY)) || {fontLevel:0, contrast:false, underline:false};
+    } catch(e) {
+      return {fontLevel:0, contrast:false, underline:false};
+    }
+  }
+
+  function saveA11yState(state){
+    try { localStorage.setItem(A11Y_KEY, JSON.stringify(state)); } catch(e){}
+  }
+
+  let a11yState = getA11yState();
+  applyA11yState(a11yState);
+
+  document.querySelectorAll('[data-a11y]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const action = btn.dataset.a11y;
+      if (action === 'font-inc') a11yState.fontLevel = Math.min(2, (a11yState.fontLevel||0) + 1);
+      if (action === 'font-dec') a11yState.fontLevel = Math.max(0, (a11yState.fontLevel||0) - 1);
+      if (action === 'contrast') a11yState.contrast = !a11yState.contrast;
+      if (action === 'underline-links') a11yState.underline = !a11yState.underline;
+      if (action === 'reset') a11yState = {fontLevel:0, contrast:false, underline:false};
+      saveA11yState(a11yState);
+      applyA11yState(a11yState);
+    });
   });
 </script>
 
