@@ -699,9 +699,19 @@
           <button type="button" class="add-stop-btn" id="addStopBtn">+ הוספת נקודת איסוף נוספת</button>
         </div>
         <div id="extraStops"></div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="travelDate">תאריך הנסיעה *</label>
+            <input type="date" id="travelDate" name="travelDate" required>
+          </div>
+          <div class="form-group">
+            <label for="travelTime">שעת איסוף *</label>
+            <input type="time" id="travelTime" name="travelTime" required step="300">
+          </div>
+        </div>
         <div class="form-group full">
-          <label for="whenTravel">מתי הנסיעה? *</label>
-          <input type="text" id="whenTravel" name="whenTravel" required placeholder="למשל: מחר בבוקר, יום ראשון 14:00, 25/12 בשעה 05:00">
+          <label for="timeNote">הערה על הזמן</label>
+          <input type="text" id="timeNote" name="timeNote" placeholder="למשל: גמיש בחצי שעה, הטיסה נוחתת ב־04:30">
         </div>
         <div class="form-group full">
           <label for="flightNumber">מספר טיסה</label>
@@ -870,12 +880,27 @@
     });
   });
 
-  // Booking form submit -> builds a WhatsApp message with all the details
+  // Booking form submit -> builds a WhatsApp message with all the details,
+  // and also sends the booking to Ilan's Google Calendar (Apps Script web app)
   const WHATSAPP_NUMBER = '972524880830'; // 052-488-0830
+  const CALENDAR_URL = 'https://script.google.com/macros/s/AKfycbw2L1P4PGxmOj9QNMVaZ78yxMNgK4St3fvLZ75w24lyfjM0vyv4-SIAgtmaOsg3xxjf/exec';
+  const HEBREW_DAYS = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
 
   const form = document.getElementById('bookingForm');
   const fields = document.getElementById('formFields');
   const success = document.getElementById('formSuccess');
+
+  // No booking dates in the past
+  const travelDateInput = document.getElementById('travelDate');
+  const now = new Date();
+  travelDateInput.min = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+  // "2026-10-05" -> "יום שני, 05/10/2026"
+  function formatDate(value){
+    const [y, m, d] = value.split('-');
+    const day = HEBREW_DAYS[new Date(y, m - 1, d).getDay()];
+    return `יום ${day}, ${d}/${m}/${y}`;
+  }
 
   form.addEventListener('submit', function(e){
     e.preventDefault();
@@ -884,7 +909,9 @@
     const phone = document.getElementById('phone').value.trim();
     const pickup = document.getElementById('pickup').value.trim();
     const destination = document.getElementById('destination').value.trim();
-    const whenTravel = document.getElementById('whenTravel').value.trim();
+    const travelDate = travelDateInput.value;
+    const travelTime = document.getElementById('travelTime').value;
+    const timeNote = document.getElementById('timeNote').value.trim();
     const flightNumber = document.getElementById('flightNumber').value.trim();
     const passengers = document.getElementById('passengers').value;
     const luggage = document.getElementById('luggage').value;
@@ -904,7 +931,8 @@
     ];
     extraStops.forEach((stop, i) => lines.push(`נקודת איסוף נוספת ${i + 1}: ${stop}`));
     lines.push(`יעד: ${destination}`);
-    lines.push(`מתי: ${whenTravel}`);
+    lines.push(`מתי: ${formatDate(travelDate)}, בשעה ${travelTime}`);
+    if (timeNote) lines.push(`הערה על הזמן: ${timeNote}`);
     if (flightNumber) lines.push(`מספר טיסה: ${flightNumber}`);
     lines.push(`מספר נוסעים: ${passengers}`);
     lines.push(`מזוודות גדולות: ${luggage}`);
@@ -914,6 +942,20 @@
 
     const message = encodeURIComponent(lines.join('\n'));
     const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${message}`;
+
+    // Creates a "pending approval" event in Ilan's calendar. no-cors: we can't read
+    // the reply, and a calendar failure must never block the WhatsApp message.
+    fetch(CALENDAR_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      keepalive: true,
+      headers: {'Content-Type': 'text/plain'},
+      body: JSON.stringify({
+        name, phone, pickup, extraStops, destination,
+        date: travelDate, time: travelTime, timeNote,
+        flightNumber, passengers, luggage, trolley, childSeat, notes
+      })
+    }).catch(() => {});
 
     fields.style.display = 'none';
     success.style.display = 'block';
