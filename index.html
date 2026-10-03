@@ -176,10 +176,10 @@
   .fleet-side img{height:200px;}
 
   @media (max-width:800px){
-    .fleet-grid{grid-template-columns:1fr;}
+    .fleet-grid{grid-template-columns:minmax(0,1fr);}
     .fleet-grid .main-shot{min-height:280px;}
     .fleet-side{flex-direction:row;}
-    .fleet-side img{height:180px;}
+    .fleet-side img{height:180px;min-width:0;flex:1;}
   }
 
   /* Fleet - additional vehicle preview */
