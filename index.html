@@ -312,8 +312,8 @@
   }
 
   /* Motion (content visible without JS) */
-  .js .reveal{opacity:0;transform:translateY(12px);transition:opacity .4s ease-out,transform .4s ease-out;}
-  .js .reveal.in{opacity:1;transform:none;}
+  .js .reveal{opacity:0;transform:translateY(48px) scale(.96);will-change:transform,opacity;}
+  .js .reveal.in{opacity:1;transform:none;will-change:auto;}
   @media (prefers-reduced-motion:reduce){
     html{scroll-behavior:auto;}
     *,*::before,*::after{transition:none!important;animation:none!important;}
@@ -967,25 +967,49 @@
     });
   });
 
-  // Reveal on scroll
-  const reveals = document.querySelectorAll('.reveal');
-  if ('IntersectionObserver' in window && !reduceMotion){
-    const io = new IntersectionObserver(entries => {
-      entries.forEach(en => {
-        if (!en.isIntersecting) return;
-        // Stagger cards that share a parent (~90ms apart, capped)
-        const siblings = Array.from(en.target.parentElement.children).filter(c => c.classList.contains('reveal'));
-        const delay = Math.min(siblings.indexOf(en.target), 4) * 90;
-        en.target.style.transitionDelay = delay + 'ms';
-        en.target.classList.add('in');
-        // Clear the delay afterwards so hover/press transitions stay instant
-        setTimeout(() => { en.target.style.transitionDelay = ''; }, delay + 450);
-        io.unobserve(en.target);
-      });
-    }, {rootMargin: '0px 0px -8% 0px'});
-    reveals.forEach(el => io.observe(el));
-  } else {
+  // Reveal tied to the scroll position (scrub): plays forward going down, rewinds going up
+  const reveals = Array.from(document.querySelectorAll('.reveal'));
+  if (reduceMotion){
     reveals.forEach(el => el.classList.add('in'));
+  } else {
+    const clamp01 = v => Math.max(0, Math.min(1, v));
+    // Cards that share a row start a little after each other
+    const offset = new Map(reveals.map(el => {
+      const sibs = Array.from(el.parentElement.children).filter(c => c.classList.contains('reveal'));
+      return [el, Math.min(sibs.indexOf(el), 4) * 0.12];
+    }));
+    const shown = new Map(reveals.map(el => [el, 0]));
+    const side = new Map(reveals.map(el => [el, 1]));
+    function target(el){
+      const vh = window.innerHeight, r = el.getBoundingClientRect(), off = offset.get(el);
+      // Entering from the bottom (scrolling down) and from the top (scrolling back up) both play the effect
+      const fromBottom = clamp01((vh - r.top) / (vh * 0.35) - off);
+      const fromTop = clamp01(r.bottom / (vh * 0.35) - off);
+      side.set(el, fromBottom <= fromTop ? 1 : -1);
+      return Math.min(fromBottom, fromTop);
+    }
+    function apply(el, p){
+      const e = 1 - Math.pow(1 - p, 3); // ease-out
+      el.style.opacity = e;
+      el.style.transform = p >= 1 ? 'none' : `translateY(${(1 - e) * 48 * side.get(el)}px) scale(${0.96 + 0.04 * e})`;
+    }
+    let running = false;
+    function frame(){
+      let moving = false;
+      reveals.forEach(el => {
+        const t = target(el), cur = shown.get(el);
+        // Smooth follow, like GSAP's scrub: close a fraction of the gap each frame
+        const next = Math.abs(t - cur) < 0.002 ? t : cur + (t - cur) * 0.14;
+        if (next !== cur){ shown.set(el, next); apply(el, next); moving = true; }
+      });
+      running = moving;
+      if (moving) requestAnimationFrame(frame);
+    }
+    const kick = () => { if (!running){ running = true; requestAnimationFrame(frame); } };
+    reveals.forEach(el => apply(el, 0));
+    window.addEventListener('scroll', kick, {passive: true});
+    window.addEventListener('resize', kick);
+    kick();
   }
 </script>
 </body>
