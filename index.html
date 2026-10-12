@@ -99,6 +99,10 @@
   .route-field label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
   .when{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
   .chip-input{display:flex;align-items:center;gap:10px;background:var(--gray-100);border-radius:14px;padding:0 16px;min-height:56px;}
+  .chip-input{flex-direction:column;align-items:stretch;justify-content:center;gap:0;padding:8px 16px 4px;min-height:64px;}
+  .chip-input label{font-size:.78rem;font-weight:600;color:var(--gray-500);line-height:1.2;cursor:pointer;}
+  .chip-input input{min-height:34px;width:100%;text-align:right;-webkit-appearance:none;appearance:none;}
+  .chip-input input::-webkit-date-and-time-value{text-align:right;}
   .chip-input:focus-within{background:var(--white);box-shadow:inset 0 0 0 2px var(--black);}
   .chip-input .icon{color:var(--ink);width:20px;height:20px;}
   .chip-input input{flex:1;border:0;background:transparent;font:500 1rem var(--font);color:var(--ink);min-height:54px;outline:none;min-width:0;}
@@ -384,7 +388,7 @@
     .stat .num{font-size:3rem;}
     .car-hero,.car-photo{grid-column:auto;}
     .car-photo{grid-template-columns:1fr;}
-    .car-photo img{min-height:220px;}
+    .car-photo img{height:auto;min-height:0;aspect-ratio:4/3;}
     .form-row,.when{grid-template-columns:1fr;}
     .form-row.four{grid-template-columns:1fr 1fr;}
     .form-card{padding:24px 18px;}
@@ -439,11 +443,11 @@
         </div>
         <div class="when">
           <div class="chip-input">
-            <label class="sr" for="qDate" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);">תאריך</label>
+            <label for="qDate">תאריך הנסיעה</label>
             <input id="qDate" type="date">
           </div>
           <div class="chip-input">
-            <label for="qTime" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);">שעת איסוף</label>
+            <label for="qTime">שעת איסוף</label>
             <input id="qTime" type="time" step="300">
           </div>
         </div>
@@ -969,9 +973,9 @@
 
   // Reveal tied to the scroll position (scrub): plays forward going down, rewinds going up
   const reveals = Array.from(document.querySelectorAll('.reveal'));
-  if (reduceMotion){
-    reveals.forEach(el => el.classList.add('in'));
-  } else {
+  {
+    // With "reduce motion" on (iPhone setting), keep a gentle fade only, no movement
+    const mv = reduceMotion ? 0 : 1;
     const clamp01 = v => Math.max(0, Math.min(1, v));
     // Cards that share a row start a little after each other
     const offset = new Map(reveals.map(el => {
@@ -991,7 +995,7 @@
     function apply(el, p){
       const e = 1 - Math.pow(1 - p, 3); // ease-out
       el.style.opacity = e;
-      el.style.transform = p >= 1 ? 'none' : `translateY(${(1 - e) * 48 * side.get(el)}px) scale(${0.96 + 0.04 * e})`;
+      el.style.transform = p >= 1 ? 'none' : `translateY(${(1 - e) * 48 * side.get(el) * mv}px) scale(${1 - 0.04 * (1 - e) * mv})`;
     }
     let running = false;
     function frame(){
