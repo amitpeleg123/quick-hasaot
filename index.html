@@ -395,6 +395,16 @@
     .form-row.four{grid-template-columns:1fr 1fr;}
     .form-card{padding:24px 18px;}
   }
+  /* Address autocomplete */
+  .ac-host{position:relative;}
+  .ac-list{position:absolute;inset-inline:0;top:calc(100% + 6px);z-index:30;margin:0;padding:6px;list-style:none;background:var(--white);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.14),0 0 0 1px rgba(0,0,0,.06);max-height:300px;overflow-y:auto;}
+  .ac-list[hidden]{display:none;}
+  .ac-list li{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:10px;cursor:pointer;text-align:start;}
+  .ac-list li[aria-selected="true"],.ac-list li:hover{background:var(--gray-100);}
+  .ac-list li strong{font-weight:600;color:var(--ink);font-size:1rem;}
+  .ac-list li small{color:var(--gray-500);font-size:.85rem;}
+  .ac-list .ac-credit{cursor:default;padding:4px 12px;font-size:.72rem;color:var(--gray-500);}
+  .ac-list .ac-credit:hover{background:none;}
 </style>
 <script type="application/ld+json">
 {
@@ -544,12 +554,12 @@
           <div class="route-field">
             <span class="dot" aria-hidden="true"></span>
             <label for="qPickup">כתובת איסוף</label>
-            <input id="qPickup" type="text" placeholder="מאיפה אוספים?" autocomplete="street-address">
+            <input id="qPickup" type="text" placeholder="מאיפה אוספים?" autocomplete="off">
           </div>
           <div class="route-field">
             <span class="sq" aria-hidden="true"></span>
             <label for="qDest">יעד</label>
-            <input id="qDest" type="text" value="נתב״ג" placeholder="לאן נוסעים?">
+            <input id="qDest" type="text" value="נתב״ג" placeholder="לאן נוסעים?" autocomplete="off">
           </div>
         </div>
         <div class="when">
@@ -714,8 +724,8 @@
 
           <div class="legend"><span class="n">2</span>הנסיעה</div>
           <div class="form-row">
-            <div class="form-group"><label for="pickup">כתובת איסוף <span class="req">*</span></label><input type="text" id="pickup" name="pickup" required placeholder="עיר / כתובת מלאה" aria-describedby="err-pickup"><p class="err" id="err-pickup" hidden>נא למלא כתובת איסוף</p></div>
-            <div class="form-group"><label for="destination">יעד <span class="req">*</span></label><input type="text" id="destination" name="destination" required placeholder="נתב״ג / כתובת יעד" aria-describedby="err-destination"><p class="err" id="err-destination" hidden>נא למלא יעד</p></div>
+            <div class="form-group"><label for="pickup">כתובת איסוף <span class="req">*</span></label><input type="text" id="pickup" name="pickup" autocomplete="off" required placeholder="עיר / כתובת מלאה" aria-describedby="err-pickup"><p class="err" id="err-pickup" hidden>נא למלא כתובת איסוף</p></div>
+            <div class="form-group"><label for="destination">יעד <span class="req">*</span></label><input type="text" id="destination" name="destination" autocomplete="off" required placeholder="נתב״ג / כתובת יעד" aria-describedby="err-destination"><p class="err" id="err-destination" hidden>נא למלא יעד</p></div>
           </div>
           <div class="form-group full"><button type="button" class="add-stop-btn" id="addStopBtn">+ הוספת נקודת איסוף נוספת</button></div>
           <div id="extraStops"></div>
@@ -852,16 +862,101 @@
   $('travelDate').min = today;
   $('qDate').min = today;
 
+  // Address autocomplete (OpenStreetMap via Photon: free, no key). Suggests as the visitor types.
+  function addressAutocomplete(input){
+    if (!input || input.dataset.ac) return;
+    input.dataset.ac = '1';
+    const host = input.parentElement; host.classList.add('ac-host');
+    const list = document.createElement('ul');
+    list.className = 'ac-list'; list.id = (input.id || 'stop' + Math.random().toString(36).slice(2)) + '-ac';
+    list.setAttribute('role', 'listbox'); list.hidden = true;
+    host.appendChild(list);
+    input.setAttribute('role', 'combobox'); input.setAttribute('aria-autocomplete', 'list');
+    input.setAttribute('aria-expanded', 'false'); input.setAttribute('aria-controls', list.id);
+    let items = [], active = -1, timer, ctrl;
+    const AIRPORT = {main: 'נתב״ג – נמל התעופה בן גוריון', sub: 'טרמינל 3 / טרמינל 1'};
+    function close(){ list.hidden = true; input.setAttribute('aria-expanded', 'false'); active = -1; }
+    function render(){
+      list.innerHTML = '';
+      items.forEach((it, i) => {
+        const li = document.createElement('li');
+        li.setAttribute('role', 'option'); li.id = list.id + '-' + i;
+        li.setAttribute('aria-selected', i === active ? 'true' : 'false');
+        li.innerHTML = '<strong></strong><small></small>';
+        li.firstChild.textContent = it.main; li.lastChild.textContent = it.sub;
+        li.addEventListener('pointerdown', e => { e.preventDefault(); choose(i); });
+        list.appendChild(li);
+      });
+      const credit = document.createElement('li'); credit.className = 'ac-credit'; credit.setAttribute('aria-hidden', 'true');
+      credit.textContent = '© OpenStreetMap'; list.appendChild(credit);
+      list.hidden = !items.length; input.setAttribute('aria-expanded', items.length ? 'true' : 'false');
+      if (active >= 0) input.setAttribute('aria-activedescendant', list.id + '-' + active); else input.removeAttribute('aria-activedescendant');
+    }
+    function choose(i){
+      const it = items[i]; if (!it) return;
+      input.value = it.value; close();
+      input.dispatchEvent(new Event('input', {bubbles: true}));
+    }
+    function label(p, num){
+      const city = p.city || p.town || p.village || p.county || '';
+      if (num && p.housenumber && /[-–;,]/.test(p.housenumber)) p = {...p, housenumber: num};
+      let main;
+      if (p.type === 'street') main = p.name + (num ? ' ' + num : '');
+      else if (p.street && p.housenumber) main = (p.name && p.name !== p.street + ' ' + p.housenumber ? p.name + ', ' : '') + p.street + ' ' + p.housenumber;
+      else if (p.street) main = p.name && p.name !== p.street ? p.name + ', ' + p.street : p.street + (num ? ' ' + num : '');
+      else main = p.name || '';
+      return {main, sub: city, value: city && main !== city ? main + ', ' + city : main};
+    }
+    async function search(q){
+      if (ctrl) ctrl.abort(); ctrl = new AbortController();
+      const num = (q.match(/\d+/) || [''])[0];
+      const url = 'https://photon.komoot.io/api/?lang=default&limit=7&lat=32.145&lon=34.84&bbox=34.2,29.4,35.95,33.4&q=' + encodeURIComponent(q);
+      try {
+        const res = await fetch(url, {signal: ctrl.signal});
+        const data = await res.json();
+        const seen = new Set(); const out = [];
+        if (/נתב|בן גוריון|שדה התעופה|נמל התעופה/.test(q)) { out.push({...AIRPORT, value: 'נתב״ג'}); seen.add('נתב״ג'); }
+        for (const f of data.features || []){
+          const p = f.properties || {};
+          if (p.countrycode && p.countrycode !== 'IL') continue;
+          if (p.osm_value === 'bus_stop' || p.osm_value === 'platform') continue;
+          const l = label(p, num);
+          if (!l.main || seen.has(l.value)) continue;
+          seen.add(l.value); out.push(l);
+          if (out.length >= 5) break;
+        }
+        items = out; active = -1; render();
+      } catch (e) { if (e.name !== 'AbortError') close(); }
+    }
+    input.addEventListener('input', e => {
+      if (!e.isTrusted) return;
+      clearTimeout(timer);
+      const q = input.value.trim();
+      if (q.length < 2){ items = []; close(); return; }
+      timer = setTimeout(() => search(q), 250);
+    });
+    input.addEventListener('keydown', e => {
+      if (list.hidden) return;
+      if (e.key === 'ArrowDown'){ e.preventDefault(); active = (active + 1) % items.length; render(); }
+      else if (e.key === 'ArrowUp'){ e.preventDefault(); active = (active - 1 + items.length) % items.length; render(); }
+      else if (e.key === 'Enter' && active >= 0){ e.preventDefault(); choose(active); }
+      else if (e.key === 'Escape'){ close(); }
+    });
+    input.addEventListener('blur', () => setTimeout(close, 120));
+  }
+  ['qPickup', 'qDest', 'pickup', 'destination'].forEach(id => addressAutocomplete($(id)));
+
   // Extra pickup stops
   $('addStopBtn').addEventListener('click', function(){
     const row = document.createElement('div');
     row.className = 'extra-stop-row';
     row.innerHTML = `
-      <input type="text" class="extra-stop-input" placeholder="נקודת איסוף נוספת" aria-label="נקודת איסוף נוספת">
+      <input type="text" class="extra-stop-input" autocomplete="off" placeholder="נקודת איסוף נוספת" aria-label="נקודת איסוף נוספת">
       <button type="button" class="remove-stop-btn" aria-label="הסרת נקודת איסוף">×</button>
     `;
     row.querySelector('.remove-stop-btn').addEventListener('click', () => row.remove());
     $('extraStops').appendChild(row);
+    addressAutocomplete(row.querySelector('input'));
     row.querySelector('input').focus();
   });
 
